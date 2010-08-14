@@ -1,0 +1,49 @@
+# Contributor: Øyvind 'Mr.Elendig' Heggstad <mrelendig@har-ikkje.net>
+pkgname=qtile-git
+pkgver=20100814
+pkgrel=1
+pkgdesc="A full-featured, pure-Python tiling window manager."
+arch=('i686' 'x86_64')
+url="http://www.qtile.org/index.html"
+license=('MIT')
+depends=('python' 'pycairo-git' 'xpyb-git')
+makedepends=('python')
+provides=('qtile')
+conflicts=('qtile')
+source=()
+md5sums=()
+
+_gitroot="git://github.com/cortesi/qtile.git"
+_gitname="qtile"
+
+build() {
+  cd "$srcdir"
+  
+  # git crud
+  msg "Connecting to GIT server...."
+
+  if [ -d $_gitname ] ; then
+    cd $_gitname && git pull origin
+    msg "The local files are updated."
+  else
+    git clone $_gitroot
+  fi
+
+  msg "GIT checkout done or server timeout"
+  msg "Preparing sources..."
+
+  if [ -d $srcdir/$_gitname-build ] ; then
+    rm -rf "$srcdir/$_gitname-build"
+  fi
+
+  cp -r "$srcdir/$_gitname" "$srcdir/$_gitname-build"
+  cd "$srcdir/$_gitname-build"
+
+  # lisence
+  msg "Copyin license..."
+  install -D -m 644 LICENSE $startdir/pkg/usr/share/licenses/$pkgname/LICENSE
+
+  # build
+  msg "Running setup.py"
+  python setup.py install --root=${pkgdir} --prefix=/usr
+}
